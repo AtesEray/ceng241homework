@@ -111,7 +111,7 @@ public:
         return cuzdanBakiyesi;
     }
 
-    void getRandevuBilgi(Berber& berber){
+    void getRandevuBilgi(Berber& berber){ 
         cout<<"Randevu aldiginiz berber :"<<berber.getBerberisim()<<endl;
         cout<<"Randevu aldiginiz saat :"<<berber.doluSaat()<<".00 "<<endl;
         //cout<<"Randevu aldiginiz sac modeli :"<<endl;  BUNU EKLEMESEKTE OLUR
