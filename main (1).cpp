@@ -143,8 +143,6 @@ public:
         cout<<"Randevu aldiginiz berber :"<<berber.getBerberisim()<<endl;
         cout<<"Randevu aldiginiz saat :"<<berber.doluSaat()<<".00 "<<endl;
         //cout<<"Randevu aldiginiz sac modeli :"<<endl;
-
-
     }
 
     void setBakiye(int geriodeme){
@@ -157,8 +155,6 @@ public:
 
 };
 
-
-
 // Rastgele fiyat listesi oluşturan bir fonksiyon
 vector<int> rastgeleFiyatListesi(size_t uzunluk) {
     vector<int> fiyatlar;
@@ -167,6 +163,7 @@ vector<int> rastgeleFiyatListesi(size_t uzunluk) {
     }
     return fiyatlar;
 }
+
 
 // Rastgele saç modeli listesi oluşturan bir fonksiyon
 vector<string> rastgeleModelListesi() {
@@ -189,10 +186,108 @@ vector<string> rastgeleModelListesi() {
 
 //kullanicinin berbere her 1 km yi kac dakika da gidecegini rast gele belirleyecek fonksiyon
 float rastgeleDakikaBelirle() {
-    float randomdakika= (rand() % 31 + 30);
+    float randomdakika= (rand() % 31 + 10);
     randomdakika = randomdakika/60;
     return  randomdakika;
 }
+
+bool sevgiliKarar(Berber& berber, Kullanici& kullanici){
+    cout<<"1-Sevgilinizin yanina düzgün bir sacla gitmek icin randevuyu ertelemek isteyin"<<endl;
+    cout<<"2-Sevgilinizin yanina gidin ve durumu anlatın"<<endl;
+    int karar;
+    cin >> karar;
+    if(karar == 1){
+        int kaderGunu;
+        kaderGunu = rand()%2+1;
+        if(kaderGunu == 1){
+            cout<<"Sevgiliniz sorun etmedi ve randevu yarina ertelendi."<<endl;
+            cout<<"Yeni gün basliyor"<<endl;
+            simdikisaat = 9;
+            this_thread::sleep_for(chrono::seconds(1));
+            return true;
+        }
+        else{
+            cout<<"Sevgiliniz zorla bugün bulusturdu"<<endl;
+            this_thread::sleep_for(chrono::seconds(1));
+            kaderGunu = rand()%2+1;
+            if(kaderGunu == 1){
+                cout<<"Sevgiliniz sacinizi begendi ve mutlusunuz hayat devam ediyor.."<<endl;
+            }
+            else{
+                cout<<"Sevgiliniz yeni sacinizi hic begenmedi ve Ex'ine döndu hayat bitti..."<<endl;
+            }
+        }
+    }
+    else{
+        int kaderGunu;
+        kaderGunu = rand()%2+1;
+        if(kaderGunu == 1){
+            cout<<"Sevgiliniz sacinizi begendi ve mutlusunuz hayat devam ediyor.."<<endl;
+
+        }
+        else{
+            cout<<"Sevgiliniz yeni sacinizi hic begenmedi ve Ex'ine döndu hayat bitti..."<<endl;
+        }
+    }
+    return false;
+}
+
+bool sacKesim(Kullanici& kullanici, Berber& berber){
+    //Buraya saç kesim esnasında yaşanacak olaylar gelecek.
+    int karar = rand()%2 +1;
+    //Saçı güzel kesme ihtimali
+    if (karar == 1){
+        cout<<"Berber sacinizi cok güzel kesti Serdar hoca gibi yakisikli oldunuz :)))"<<endl;
+        cout<<"Fakat..."<<endl;
+        this_thread::sleep_for(chrono::seconds(1));
+        cout<<"Sevgiliniz sacinizi gorunce eski sevgilisi Serdar Arslan aklina geldi ve uzuldu"<<endl;
+        kullanici.setRandevuhakki(false);
+        return false;
+    }
+    //Saçı kötü kesme ihtimali
+    else{
+        cout<<"Berber sacinizi kotu kesti sevgilinizin yaniniza gidemezsiniz"<<endl;
+        cout<<"1-Berberle kavga et parani iste"<<endl;
+        cout<<"2-Bir sey deme ve sevgilinin yanina git"<<endl;
+        int kavgakarar;
+        cin>>kavgakarar;
+        if(kavgakarar == 1){
+            int kavga = rand()%2 +1;
+            if(kavga == 1){
+                cout<<"TEBRIKLERRR!! Berberi dövdünüz ve paranizi geri aldiniz.."<<endl;
+                berber.setRandevu(berber.doluSaat()-9);
+                kullanici.setRandevuhakki(true);
+                kullanici.setBakiye(100-kullanici.bakiyeKontrolEt());
+                //Sevgili kararı
+                return sevgiliKarar(berber, kullanici);
+            }
+            else{
+                cout<<"Berber elinizi yuzunuzu dagitti.."<<endl;
+                this_thread::sleep_for(chrono::seconds(1));
+                cout<<"Kavga ettiginiz icin iki kat para aldi..."<<endl;
+                this_thread::sleep_for(chrono::seconds(1));
+                kullanici.setBakiye((kullanici.bakiyeKontrolEt() *(-1)));
+                cout<<"Sevgiliniz sacinizi hic begenmedi ve dayak yediginizi icin sizden ayrıldı hayat bitti..."<<endl;
+                kullanici.setRandevuhakki(false);
+                return false;
+            }
+        }
+        else{
+            int kaderGunu;
+            kaderGunu = rand()%2+1;
+            if(kaderGunu == 1){
+                cout<<"Sevgiliniz sacinizi begendi ve mutlusunuz hayat devam ediyor.."<<endl;
+                kullanici.setRandevuhakki(false);
+            }
+            else{
+                cout<<"Sevgiliniz yeni sacinizi hic begenmedi ve Ex'ine döndu hayat bitti..."<<endl;
+                kullanici.setRandevuhakki(false);
+            }
+            return false;
+        }
+    }
+}
+
 
 //Randevuyu kaçırdığı zaman berberini kararını belirleyen fonksiyon
 void randevuKacirma(Kullanici& kullanici, Berber& berber){
@@ -254,10 +349,11 @@ bool berbereYetis(Kullanici& kullanici, int mesafeKm, int randevuSaat , Berber& 
 
     }
 
-    cout << "Berbere başarıyla yetişildi!" << endl;
+    cout << "Berbere basariyla yetisildi!" << endl;
     cout << "Sac kesiminiz basliyor..." << endl;
     //Saç kesim fonksiyonu konulup bir durum geri dönüşü alınabilir.
-    return true;
+
+    return sacKesim(kullanici,berber);
 }
 
 
@@ -394,12 +490,14 @@ int main() {
             }
             else if(secim2==2){
                 //berbere yol alma sureci
-                if(!berbereYetis(kullanici, berberDukkanlari[secim-1].mesafe , berberDukkanlari[secim-1].doluSaat(), berberDukkanlari[secim-1])){
-                    for(int i = 0 ; i < berberDukkanlari.size() ; i++){
+                if(!berbereYetis(kullanici, berberDukkanlari[secim-1].mesafe , berberDukkanlari[secim-1].doluSaat(), berberDukkanlari[secim-1]))
+                    break;
+                for(int i = 0 ; i < berberDukkanlari.size() ; i++){
                         berberDukkanlari[i].randmesafe();
                         berberDukkanlari[i].rastgeleIsim();
-                    }
                 }
+
+
             }
             else if(secim2 == 3){
                 randevuIptalEt(berberDukkanlari[secim - 1], kullanici);
@@ -408,15 +506,8 @@ int main() {
                 int x=kullanici.bakiyeKontrolEt();
                 cout<<"Bakiyeniz: "<<x<<endl;
             }
-
-
         }
-
-
     }
-
-
-
     return 0;
 }
 
