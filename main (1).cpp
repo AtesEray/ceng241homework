@@ -3,14 +3,16 @@
 #include <string>
 #include <ctime>
 #include <cstdlib>
-
+#include <thread>
+#include <iomanip>
 
 using namespace std;
 
 vector<string> rastgeleModelListesi();
 vector<int> rastgeleFiyatListesi(size_t uzunluk);
-string rastgeleIsim();
 
+
+float simdikisaat = 9;
 
 class Berber {
 private:
@@ -20,12 +22,15 @@ private:
     vector<string> randevuSaatleri;
     vector<bool> saatDolulukDurumu;
 
+
+
 public:
+    int mesafe;
     Berber(const string& berberIsim) : isim(berberIsim) {
-        isim = rastgeleIsim();
+        rastgeleIsim();
         sacModelleri = rastgeleModelListesi();
         sacModelFiyatlari = rastgeleFiyatListesi(sacModelleri.size());
-
+        randmesafe();
         //randevu saatlerini ayarladigi kisim
         for (int i = 9; i <= 17; ++i) {
             randevuSaatleri.push_back(to_string(i) + ":00");
@@ -33,10 +38,17 @@ public:
         }
     }
 
+    //berberin rastgele olarak mesafesini belirleyen ve mesafeyi döndüren fonksiyon
+    int randmesafe(){
+        int max = 25;
+        int min = 5;
+        mesafe= min + rand() % (max - min + 1);
+        return mesafe;
+    }
 
 
     void berberDetaylariniGoster()  {
-        cout << "Berber: " << isim << endl;
+        cout << "Berber: " << isim <<"- Uzaklik: "<<mesafe<< endl;
     }
 
     void sacStilleriGoster()  {
@@ -74,14 +86,18 @@ public:
     }
 
     int doluSaat(){
-        for (int i = 9; i <= 17; ++i) {
-            if(saatDolulukDurumu[i] == false){
-                return i;
+        for (int i = 0; i <= 8; ++i) {
+            if(saatDolulukDurumu[i]){
+                return i+9;
             }
         }
     }
 
-
+    // Rastgele isim seçen bir fonksiyon
+    void rastgeleIsim() {
+        vector<string> isimler = {"Serdar Arslan", "Ahmet Kaya", "Mehmet Demir", "Can Yucel", "Emre Tekin", "Huseyin Aksoy", "Burak Celik", "Oguzhan Ozturk", "Yasin Aydin", "Serkan Yildirim", "Onur Korkmaz", "Mustafa Ekinci", "Gokhan Yilmaz", "Cemal Arslan", "Kaan Kaya" };
+        isim = isimler[rand() % isimler.size()];
+    }
 
 };
 
@@ -141,11 +157,7 @@ public:
 
 };
 
-// Rastgele isim seçen bir fonksiyon
-string rastgeleIsim() {
-    vector<string> isimler = {"Serdar Arslan", "Ahmet Kaya", "Mehmet Demir", "Can Yucel", "Emre Tekin", "Huseyin Aksoy", "Burak Celik", "Oguzhan Ozturk", "Yasin Aydin", "Serkan Yildirim", "Onur Korkmaz", "Mustafa Ekinci", "Gokhan Yilmaz", "Cemal Arslan", "Kaan Kaya" };
-    return isimler[rand() % isimler.size()];
-}
+
 
 // Rastgele fiyat listesi oluşturan bir fonksiyon
 vector<int> rastgeleFiyatListesi(size_t uzunluk) {
@@ -176,28 +188,75 @@ vector<string> rastgeleModelListesi() {
 
 
 //kullanicinin berbere her 1 km yi kac dakika da gidecegini rast gele belirleyecek fonksiyon
-int rastgeleDakikaBelirle() {
-    return rand() % 31 + 30;
+float rastgeleDakikaBelirle() {
+    float randomdakika= (rand() % 31 + 30);
+    randomdakika = randomdakika/60;
+    return  randomdakika;
 }
 
-//daha hazir degil bu tam nasil calisiyor bilmiyom gpt yapti
-bool berbereYetis(Kullanici& kullanici, int mesafeKm, int randevuSaat, int simdikiSaat) {
-    int toplamDakika = 0;
+//Randevuyu kaçırdığı zaman berberini kararını belirleyen fonksiyon
+void randevuKacirma(Kullanici& kullanici, Berber& berber){
+    int karar = rand()%2 +1;
+    if(karar == 1){
+        cout<<"Berber paranizi iade etmeye karar verdi yarin tekrar randevu alabilirsiniz."<<endl;
+        kullanici.setBakiye(100- kullanici.bakiyeKontrolEt());
+        cout<<"Randevu paraniz: "<<100 - kullanici.bakiyeKontrolEt()<< "hesabiniza yatirilmistir iyi gunler.." <<endl;
+        cout<<"Gun bitti yeni bir gun basliyor.."<<endl;
+        //Bir sonraki gün için randevu saatleri tekrar boşaltıldı ve kullanıcıya randevu alma hakkı verildi bakiyesi tazelendi.
+        berber.setRandevu(berber.doluSaat()-9);
+        kullanici.setRandevuhakki(true);
+        kullanici.setBakiye(100-kullanici.bakiyeKontrolEt());;
 
+        simdikisaat = 9;
+        this_thread::sleep_for(chrono::seconds(1));
+    }
+    else{
+        cout<<"Berber paranizi iade etmeyi reddetti."<<endl;
+        cout<<"Lutfen bir daha randevu saatinize yetisiniz. Iyı gunler.."<<endl;
+        cout<<"Gun bitti yeni bir gun basliyor.."<<endl;
+        // randevu saatleri düzenlendi randevu hakkı verildi saat başa sardı para geri verilmedi
+        berber.setRandevu(berber.doluSaat()-9);
+        kullanici.setRandevuhakki(true);
+        simdikisaat = 9;
+        this_thread::sleep_for(chrono::seconds(1));
+    }
+}
+
+//daha hazir degil bu tam nasil calisiyor bilmiyom.
+bool berbereYetis(Kullanici& kullanici, int mesafeKm, int randevuSaat , Berber& berber) {
+
+    float toplamsaat = 0;
+    int tamKisim;
+    int dakikaKisim;
     for (int i = 0; i < mesafeKm; ++i) {
-        int dakika = rastgeleDakikaBelirle();
-        toplamDakika += dakika;
+        float dakika = rastgeleDakikaBelirle();
+        simdikisaat += dakika;
+        toplamsaat += dakika;
+        //bu kısımda saati ve dakikayı yan yana bastırmak için işelem yapıyor.
+        tamKisim = static_cast<int>(simdikisaat);
+        dakikaKisim = static_cast<int>((simdikisaat - tamKisim) * 60);
 
-        if (simdikiSaat + toplamDakika >= randevuSaat) {
-            cout << i + 1 << " km gidildi, toplam " << toplamDakika << " dakika sürdü." << endl;
-            cout << "Berbere yetişilemedi. Randevu iptal edildi." << endl;
+        cout<<"1 km'yi "<<dakika *60<<" dakika icerisinde gittiniz kalan yol: "<< mesafeKm - i<<" km."<<endl;
+        cout << "Suanki saat : "<< tamKisim<<"."<<setfill('0')<<setw(2)<<dakikaKisim <<" Randevu saati: "<<randevuSaat<<".00"<< endl<<endl;
+        this_thread::sleep_for(chrono::seconds(1));
+
+
+
+        if (simdikisaat  > randevuSaat) {
+            cout << i + 1 << " km gidildi, toplam " << toplamsaat * 60 << " dakika surdu." << endl;
+            cout << "Berbere yetisilemedi. Randevu iptal edildi." << endl;
+            cout << "Dukkana bilgilendirme yapiliyor cevap bekleyin lutfen.." << endl;
+            //berberin randevu parasını verecek mi vermeyecek mi fonksiyonu eklenecek.
+            randevuKacirma(kullanici , berber);
             return false;
         }
 
-        cout << i + 1 << " km gidildi, toplam " << toplamDakika << " dakika sürdü." << endl;
+
     }
 
     cout << "Berbere başarıyla yetişildi!" << endl;
+    cout << "Sac kesiminiz basliyor..." << endl;
+    //Saç kesim fonksiyonu konulup bir durum geri dönüşü alınabilir.
     return true;
 }
 
@@ -235,9 +294,9 @@ void randevuAl(Kullanici& kullanici, Berber& berber) {
 
         }
 
-        //secilen modelin fiyatini kontrol etmek lazim. ve sat seciminden sonra model secimi lazim.
+
         if(!kullanici.getRandevuhakki()){
-            cout <<"Randevu basariyla alinmistir randevu saatiniz: "<<saatSecim +8 <<endl;
+            cout <<"Randevu basariyla alinmistir randevu saatiniz: "<<saatSecim +8<<":00" <<endl;
             berber.setRandevu(saatSecim-1);
         }
 
@@ -266,9 +325,9 @@ int main() {
     vector<Berber> berberDukkanlari = {Berber("BerberDukkan1"), Berber("BerberDukkan2"), Berber("BerberDukkan3")};
     Kullanici kullanici("Kullanici1", 100);
 
-    int simdikiSaat = 9;
 
-    kullanici.getBakiye();
+
+
     while (true) {
         int secim;//berber dukkani icin secim degeri
         int secim2;//randevu aldiktan sonraki secim menusu icin deger
@@ -335,7 +394,12 @@ int main() {
             }
             else if(secim2==2){
                 //berbere yol alma sureci
-                //kullanici.yolacik();
+                if(!berbereYetis(kullanici, berberDukkanlari[secim-1].mesafe , berberDukkanlari[secim-1].doluSaat(), berberDukkanlari[secim-1])){
+                    for(int i = 0 ; i < berberDukkanlari.size() ; i++){
+                        berberDukkanlari[i].randmesafe();
+                        berberDukkanlari[i].rastgeleIsim();
+                    }
+                }
             }
             else if(secim2 == 3){
                 randevuIptalEt(berberDukkanlari[secim - 1], kullanici);
