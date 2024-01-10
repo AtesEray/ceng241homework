@@ -10,7 +10,7 @@ using namespace std;
 
 vector<string> rastgeleModelListesi();
 vector<int> rastgeleFiyatListesi(size_t uzunluk);
-
+vector<string> isimler = {"Serdar Arslan", "Ahmet Kaya", "Mehmet Demir", "Can Yucel", "Emre Tekin", "Huseyin Aksoy", "Burak Celik", "Oguzhan Ozturk", "Yasin Aydin", "Serkan Yildirim", "Onur Korkmaz", "Mustafa Ekinci", "Gokhan Yilmaz", "Cemal Arslan", "Kaan Kaya" };
 
 float simdikisaat = 9;
 
@@ -95,8 +95,10 @@ public:
 
     // Rastgele isim seçen bir fonksiyon
     void rastgeleIsim() {
-        vector<string> isimler = {"Serdar Arslan", "Ahmet Kaya", "Mehmet Demir", "Can Yucel", "Emre Tekin", "Huseyin Aksoy", "Burak Celik", "Oguzhan Ozturk", "Yasin Aydin", "Serkan Yildirim", "Onur Korkmaz", "Mustafa Ekinci", "Gokhan Yilmaz", "Cemal Arslan", "Kaan Kaya" };
-        isim = isimler[rand() % isimler.size()];
+        int index =rand() % isimler.size();
+        isim = isimler[index];
+        //berber isimlerinin farklı olarak ayarlamak için alınan ismi listeden çıkarıyoruz.
+        isimler.erase(isimler.begin()+ index);
     }
 
     string getSacmodel(int i){
